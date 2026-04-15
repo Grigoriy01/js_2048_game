@@ -215,7 +215,7 @@ class Game {
     this.#score = 0;
     this.#generateRandomPositions();
     this.#generateRandomPositions();
-    this.status = Game.statuses.playing;
+    this.#status = Game.statuses.playing;
   }
 
   /**
@@ -226,10 +226,12 @@ class Game {
     this.board = structuredClone(this.#initialBoard);
     this.generateRandomPositions();
     this.generateRandomPositions();
-    this.status = Game.statuses.playing;
+    this.#status = Game.statuses.playing;
   }
 
   // Add your own methods here
+
+  // #region function-tools
   // --> shift of values in the row and + addition of values
   #shiftDirection(row) {
     const nonZeroValues = row.filter((el) => el > 0);
@@ -301,7 +303,7 @@ class Game {
     if (this.#status === Game.statuses.idle) {
       return 2;
     } else {
-      return Math.random() > 0.1 ? 4 : 2;
+      return Math.random() > 0.1 ? 2 : 4;
     }
   }
 
@@ -338,16 +340,17 @@ class Game {
       this.#status = Game.statuses.lose;
     }
   }
+  // #endregion function-tools
 }
 
-const game = new Game();
+// const game = new Game();
 
-game.start();
-game.moveLeft();
-game.moveRight();
-game.moveUp();
-game.moveLeft();
-game.moveUp();
-game.getScore();
+// game.start();
+// game.moveLeft();
+// game.moveRight();
+// game.moveUp();
+// game.moveLeft();
+// game.moveUp();
+// game.getScore();
 
 module.exports = Game;
