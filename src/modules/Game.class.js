@@ -27,7 +27,11 @@ class Game {
     lose: 'lose',
   };
 
+  #size;
+
   #score = 0;
+  #initialBoard;
+  #status;
 
   constructor(
     initialState = [
@@ -39,24 +43,156 @@ class Game {
   ) {
     // eslint-disable-next-line no-console
     console.log(initialState);
-    this.board = structuredClone(initialState); // tiefe clonen
-    this.status = Game.statuses.playing;
+    this.#initialBoard = structuredClone(initialState);
+    this.board = structuredClone(this.#initialBoard); // tiefe clonen
+    this.#size = this.board.length;
+    this.#status = Game.statuses.idle;
+  }
+  // #region moves
+  moveLeft() {
+    if (
+      this.#status === Game.statuses.lose ||
+      this.#status === Game.statuses.win
+    ) {
+      return;
+    }
+
+    let canMove = false;
+
+    this.board = this.board.map((row) => {
+      const { newValidArray, isChanged } = this.#shiftDirection(row);
+
+      canMove ||= isChanged;
+
+      return newValidArray;
+    });
+
+    if (!canMove) {
+      return;
+    }
+
+    this.#generateRandomPositions();
+    this.#checkGameStatus();
   }
 
-  moveLeft() {}
-  moveRight() {}
-  moveUp() {}
-  moveDown() {}
+  moveRight() {
+    if (
+      this.#status === Game.statuses.lose ||
+      this.#status === Game.statuses.win
+    ) {
+      return;
+    }
+
+    let canMove = false;
+
+    this.board = this.board.map((row) => {
+      const { newValidArray, isChanged } = this.#shiftDirection(
+        [...row].reverse(),
+      );
+
+      canMove ||= isChanged;
+
+      return newValidArray.reverse();
+    });
+
+    if (!canMove) {
+      return;
+    }
+
+    this.#generateRandomPositions();
+    this.#checkGameStatus();
+  }
+
+  moveUp() {
+    if (
+      this.#status === Game.statuses.lose ||
+      this.#status === Game.statuses.win
+    ) {
+      return;
+    }
+
+    let canMove = false;
+
+    for (let x = 0; x < this.#size; x++) {
+      const emptyRow = [];
+
+      for (let y = 0; y < this.#size; y++) {
+        emptyRow.push(this.board[y][x]);
+      }
+
+      const { newValidArray, isChanged } = this.#shiftDirection(emptyRow);
+      const cleanedEmptyRow = newValidArray;
+
+      canMove ||= isChanged;
+
+      for (let y = 0; y < this.#size; y++) {
+        this.board[y][x] = cleanedEmptyRow[y];
+      }
+    }
+
+    if (!canMove) {
+      return;
+    }
+
+    this.#generateRandomPositions();
+    this.#checkGameStatus();
+  }
+
+  moveDown() {
+    if (
+      this.#status === Game.statuses.lose ||
+      this.#status === Game.statuses.win
+    ) {
+      return;
+    }
+
+    let canMove = false;
+
+    for (let x = 0; x < this.#size; x++) {
+      const emptyRow = [];
+
+      for (let y = 0; y < this.#size; y++) {
+        emptyRow.push(this.board[y][x]);
+      }
+
+      const { newValidArray, isChanged } = this.#shiftDirection(
+        [...emptyRow].reverse(),
+      );
+      const cleanedEmptyRow = newValidArray.reverse();
+
+      canMove ||= isChanged;
+
+      for (let y = 0; y < this.#size; y++) {
+        this.board[y][x] = cleanedEmptyRow[y];
+      }
+    }
+
+    if (!canMove) {
+      return;
+    }
+
+    this.#generateRandomPositions();
+    this.#checkGameStatus();
+  }
+  // #endregion moves
 
   /**
    * @returns {number}
    */
-  getScore() {}
+  getScore() {
+    return this.#score;
+  }
 
   /**
    * @returns {number[][]}
    */
-  getState() {}
+  getState() {
+    return {
+      score: this.#score,
+      statusGame: this.#status,
+      board: this.board,
+    };
+  }
 
   /**
    * Returns the current game status.
@@ -68,24 +204,76 @@ class Game {
    * `win` - the game is won;
    * `lose` - the game is lost
    */
-  getStatus() {}
+  getStatus() {
+    return this.#status;
+  }
 
   /**
    * Starts the game.
    */
   start() {
     this.#score = 0;
-    this.generateRandomPositions();
+    this.#generateRandomPositions();
+    this.#generateRandomPositions();
+    this.status = Game.statuses.playing;
   }
 
   /**
    * Resets the game.
    */
-  restart() {}
+  restart() {
+    this.#score = 0;
+    this.board = structuredClone(this.#initialBoard);
+    this.generateRandomPositions();
+    this.generateRandomPositions();
+    this.status = Game.statuses.playing;
+  }
 
   // Add your own methods here
+  // --> shift of values in the row and + addition of values
+  #shiftDirection(row) {
+    const nonZeroValues = row.filter((el) => el > 0);
+    const updatedArray = [];
+
+    for (let i = 0; i < nonZeroValues.length; i++) {
+      const currNum = nonZeroValues[i];
+      const nextNum = nonZeroValues[i + 1];
+
+      if (i === nonZeroValues.length - 1) {
+        updatedArray.push(currNum);
+        break;
+      }
+
+      if (currNum === nextNum) {
+        const sum = currNum + nextNum;
+
+        updatedArray.push(sum);
+        this.#score += sum;
+        i++;
+      } else {
+        updatedArray.push(currNum);
+      }
+    }
+
+    const newValidArray = [];
+
+    for (let i = 0; i < this.#size; i++) {
+      const curr = updatedArray[i];
+
+      newValidArray.push(typeof curr === 'number' ? curr : 0);
+    }
+
+    const beforRow = row.join(',');
+    const afterRow = newValidArray.join(',');
+    const isChange = beforRow !== afterRow;
+
+    return {
+      newValidArray,
+      isChange,
+    };
+  }
   // --> random position of Numbers on the board
-  generateRandomPositions() {
+  #generateRandomPositions() {
     const cellPosition = {
       x: [],
       y: [],
@@ -100,21 +288,54 @@ class Game {
       });
     });
 
+    // var coordinate for position of Number on the board
     const randomIndex = Math.floor(Math.random() * cellPosition.x.length);
     const coorX = cellPosition.x[randomIndex];
     const coorY = cellPosition.y[randomIndex];
 
-    this.board[coorX][coorY] = this.getRandomNumbers();
+    this.board[coorX][coorY] = this.#getRandomNumbers();
   }
 
   // --> randoms numbers 2 or (4 - 10% chance)
-  getRandomNumbers() {
-    if (this.status === Game.statuses.idle) {
-      this.status = Game.statuses.playing;
-
+  #getRandomNumbers() {
+    if (this.#status === Game.statuses.idle) {
       return 2;
     } else {
       return Math.random() > 0.1 ? 4 : 2;
+    }
+  }
+
+  // --> scaning board and change the status-game
+  #checkGameStatus() {
+    let hasEmptyCells = false;
+    let hasPossibleMerges = false;
+
+    for (let y = 0; y < this.#size; y++) {
+      for (let x = 0; x < this.#size; x++) {
+        const bottomNeighbor =
+          y > this.#size - 2 ? undefined : this.board[y + 1][x];
+        const currentValue = this.board[y][x];
+        const rightNeighbor =
+          x > this.#size - 2 ? undefined : this.board[y][x + 1];
+
+        if (currentValue === 2048) {
+          this.#status = Game.statuses.win;
+
+          return;
+        }
+
+        if (currentValue === 0) {
+          hasEmptyCells = true;
+        }
+
+        if (currentValue === rightNeighbor || currentValue === bottomNeighbor) {
+          hasPossibleMerges = true;
+        }
+      }
+    }
+
+    if (!hasEmptyCells && !hasPossibleMerges) {
+      this.#status = Game.statuses.lose;
     }
   }
 }
@@ -122,5 +343,11 @@ class Game {
 const game = new Game();
 
 game.start();
+game.moveLeft();
+game.moveRight();
+game.moveUp();
+game.moveLeft();
+game.moveUp();
+game.getScore();
 
 module.exports = Game;
