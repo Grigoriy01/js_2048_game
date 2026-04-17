@@ -9,6 +9,7 @@ const game = new Game();
 const startBtn = document.querySelector('.button');
 const currentScore = document.querySelector('.game-score');
 const tableItems = [...document.querySelectorAll('.field-cell')];
+const messageItems = document.querySelector('.message-container');
 
 // #region start Button
 startBtn.addEventListener('click', () => {
@@ -57,6 +58,7 @@ const renderScore = (dataScore) => {
 // --> rendering Status - Game
 function renderStatusGame(dataStatusGame) {
   updateButtonSate(dataStatusGame);
+  getMessageByStatus(dataStatusGame);
 }
 
 // --> update the Button Start
@@ -72,4 +74,21 @@ const updateButtonSate = (statusValue) => {
 };
 
 // --> a work with the Message
+const messStart = messageItems.querySelector('.message-start');
+const messWin = messageItems.querySelector('.message-win');
+const messLose = messageItems.querySelector('.message-lose');
 
+const getMessageByStatus = (statusValue) => {
+  messStart.classList.add('hidden');
+  messLose.classList.add('hidden');
+  messWin.classList.add('hidden');
+  messageItems.classList.add('hidden');
+
+  if (statusValue !== Game.statuses.playing) {
+    const sufix = statusValue === Game.statuses.win ? 'win' : 'lose';
+    const messageEl = messageItems.querySelector(`.message-${sufix}`);
+
+    messageEl.classList.remove('hidden');
+    messageItems.classList.remove('hidden');
+  }
+};
