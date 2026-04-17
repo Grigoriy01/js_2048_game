@@ -224,8 +224,8 @@ class Game {
   restart() {
     this.#score = 0;
     this.board = structuredClone(this.#initialBoard);
-    this.generateRandomPositions();
-    this.generateRandomPositions();
+    this.#generateRandomPositions();
+    this.#generateRandomPositions();
     this.#status = Game.statuses.playing;
   }
 
@@ -343,9 +343,9 @@ class Game {
   // #endregion function-tools
 }
 
-// const game = new Game();
+const game = new Game();
 
-// game.start();
+game.restart();
 // game.moveLeft();
 // game.moveRight();
 // game.moveUp();
@@ -353,4 +353,5 @@ class Game {
 // game.moveUp();
 // game.getScore();
 
-module.exports = Game;
+// module.exports = Game;
+export default Game;
