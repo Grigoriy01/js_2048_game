@@ -5,90 +5,115 @@ import Game from '../modules/Game.class.js';
 
 const game = new Game();
 
-// Write your code here
-const startBtn = document.querySelector('.button');
-const currentScore = document.querySelector('.game-score');
-const tableItems = [...document.querySelectorAll('.field-cell')];
-const messageItems = document.querySelector('.message-container');
+class GameView {
+  constructor(logic) {
+    this.game = logic;
 
-// #region start Button
-startBtn.addEventListener('click', () => {
-  updateView();
-});
-// #endregion start Button
+    this.startBtn = document.querySelector('.button');
+    this.currentScore = document.querySelector('.game-score');
+    this.tableItems = [...document.querySelectorAll('.field-cell')];
+    this.messageItems = document.querySelector('.message-container');
 
-// --> updateView
-function updateView() {
-  const state = game.getState();
+    // --> var for blocks Message
+    this.messStart = this.messageItems.querySelector('.message-start');
+    this.messWin = this.messageItems.querySelector('.message-win');
+    this.messLose = this.messageItems.querySelector('.message-lose');
 
-  renderBoard(state.board);
-  renderStatusGame(state.statusGame);
-  renderScore(state.score);
-}
+    this.initListener();
+  }
 
-// --> rendering Board
-const renderBoard = (dateBoard) => {
-  const flatBoard = dateBoard.flat();
+  initListener() {
+    // #region start Button
+    this.startBtn.addEventListener('click', () => {
+      this.handleBtnStart();
+      this.updateView();
+    });
 
-  tableItems.forEach((cell, i) => {
-    const classListValue = [...cell.classList];
-    const value = flatBoard[i];
-    const classModif = `field-cell--${value}`;
-    let j = 0;
+    // #endregion start Button
+  }
 
-    while (j < classListValue.length) {
-      const currString = classListValue[j];
+  // --> handleBtnStart
+  handleBtnStart() {
+    const statusValue = this.game.getState().statusGame;
 
-      if (currString.startsWith('field-cell--')) {
-        cell.classList.remove(currString);
-      }
-      j++;
+    if (statusValue !== Game.statuses.idle) {
+      this.game.restart();
+    } else {
+      this.game.start();
+    }
+  }
+
+  // --> updateView
+  updateView() {
+    const state = this.game.getState();
+
+    this.renderBoard(state.board);
+    this.renderStatusGame(state.statusGame);
+    this.renderScore(state.score);
+  }
+
+  // -->
+  renderMessage(statusValue) {
+    if (statusValue === Game.statuses.idle) {
+      return;
     }
 
-    cell.textContent = value === 0 ? '' : value;
-    cell.classList.add(classModif);
-  });
-};
+    this.messStart.classList.add('hidden');
+    this.messLose.classList.add('hidden');
+    this.messWin.classList.add('hidden');
+    this.messageItems.classList.add('hidden');
 
-// -->rendering Score
-const renderScore = (dataScore) => {
-  currentScore.textContent = dataScore;
-};
+    if (statusValue !== Game.statuses.playing) {
+      const sufix = statusValue === Game.statuses.win ? 'win' : 'lose';
+      const messageEl = this.messageItems.querySelector(`.message-${sufix}`);
 
-// --> rendering Status - Game
-function renderStatusGame(dataStatusGame) {
-  updateButtonSate(dataStatusGame);
-  getMessageByStatus(dataStatusGame);
+      messageEl.classList.remove('hidden');
+      this.messageItems.classList.remove('hidden');
+    }
+  }
+
+  // --> rendering Board
+  renderBoard = (dateBoard) => {
+    const flatBoard = dateBoard.flat();
+
+    this.tableItems.forEach((cell, i) => {
+      const classListValue = [...cell.classList];
+      const value = flatBoard[i];
+      const classModif = `field-cell--${value}`;
+      let j = 0;
+
+      while (j < classListValue.length) {
+        const currString = classListValue[j];
+
+        if (currString.startsWith('field-cell--')) {
+          cell.classList.remove(currString);
+        }
+        j++;
+      }
+
+      cell.textContent = value === 0 ? '' : value;
+      cell.classList.add(classModif);
+    });
+  };
+
+  // --> rendering Status - Game
+  renderStatusGame(infoStatus) {
+    // changing button
+    if (infoStatus !== Game.statuses.idle) {
+      this.startBtn.classList.remove('start');
+      this.startBtn.classList.add('restart');
+      this.startBtn.textContent = 'restart';
+    }
+
+    this.renderMessage(infoStatus);
+  }
+
+  // -->rendering Score
+  renderScore = (dataScore) => {
+    this.currentScore.textContent = dataScore;
+  };
 }
 
-// --> update the Button Start
-const updateButtonSate = (statusValue) => {
-  if (statusValue !== Game.statuses.idle) {
-    game.restart();
-  } else {
-    game.start();
-    startBtn.classList.remove('start');
-    startBtn.classList.add('restart');
-    startBtn.textContent = 'restart';
-  }
-};
+const view = new GameView(game);
 
-// --> a work with the Message
-const messStart = messageItems.querySelector('.message-start');
-const messWin = messageItems.querySelector('.message-win');
-const messLose = messageItems.querySelector('.message-lose');
-
-const getMessageByStatus = (statusValue) => {
-  messStart.classList.add('hidden');
-  messLose.classList.add('hidden');
-  messWin.classList.add('hidden');
-  messageItems.classList.add('hidden');
-
-  if (statusValue !== Game.statuses.playing) {
-    const sufix = statusValue === Game.statuses.win ? 'win' : 'lose';
-    const messageEl = messageItems.querySelector(`.message-${sufix}`);
-
-    messageEl.classList.remove('hidden');
-    messageItems.classList.remove('hidden');
-  }
-};
+view.updateView();
