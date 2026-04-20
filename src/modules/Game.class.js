@@ -50,6 +50,7 @@ class Game {
   }
   // #region moves
   moveLeft() {
+    // guard from push-rey
     if (
       this.#status === Game.statuses.lose ||
       this.#status === Game.statuses.win
@@ -60,13 +61,14 @@ class Game {
     let canMove = false;
 
     this.board = this.board.map((row) => {
-      const { newValidArray, isChanged } = this.#shiftDirection(row);
+      const { newValidArray, isChange } = this.#shiftDirection(row);
 
-      canMove ||= isChanged;
+      canMove ||= isChange;
 
       return newValidArray;
     });
 
+    // wenn keine änderung werden, keine neuer Zehlen
     if (!canMove) {
       return;
     }
@@ -86,11 +88,11 @@ class Game {
     let canMove = false;
 
     this.board = this.board.map((row) => {
-      const { newValidArray, isChanged } = this.#shiftDirection(
+      const { newValidArray, isChange } = this.#shiftDirection(
         [...row].reverse(),
       );
 
-      canMove ||= isChanged;
+      canMove ||= isChange;
 
       return newValidArray.reverse();
     });
@@ -114,19 +116,18 @@ class Game {
     let canMove = false;
 
     for (let x = 0; x < this.#size; x++) {
-      const emptyRow = [];
+      const tempRow = [];
 
       for (let y = 0; y < this.#size; y++) {
-        emptyRow.push(this.board[y][x]);
+        tempRow.push(this.board[y][x]);
       }
 
-      const { newValidArray, isChanged } = this.#shiftDirection(emptyRow);
-      const cleanedEmptyRow = newValidArray;
+      const { newValidArray, isChange } = this.#shiftDirection(tempRow);
 
-      canMove ||= isChanged;
+      canMove ||= isChange;
 
       for (let y = 0; y < this.#size; y++) {
-        this.board[y][x] = cleanedEmptyRow[y];
+        this.board[y][x] = newValidArray[y];
       }
     }
 
@@ -149,21 +150,21 @@ class Game {
     let canMove = false;
 
     for (let x = 0; x < this.#size; x++) {
-      const emptyRow = [];
+      const tempRow = [];
 
       for (let y = 0; y < this.#size; y++) {
-        emptyRow.push(this.board[y][x]);
+        tempRow.push(this.board[y][x]);
       }
 
-      const { newValidArray, isChanged } = this.#shiftDirection(
-        [...emptyRow].reverse(),
+      const { newValidArray, isChange } = this.#shiftDirection(
+        [...tempRow].reverse(),
       );
-      const cleanedEmptyRow = newValidArray.reverse();
 
-      canMove ||= isChanged;
+      newValidArray.reverse();
+      canMove ||= isChange;
 
       for (let y = 0; y < this.#size; y++) {
-        this.board[y][x] = cleanedEmptyRow[y];
+        this.board[y][x] = newValidArray[y];
       }
     }
 
@@ -232,19 +233,21 @@ class Game {
   // Add your own methods here
 
   // #region function-tools
-  // --> shift of values in the row and + addition of values
+  // --> shift of values in the row and addition of values
   #shiftDirection(row) {
     const nonZeroValues = row.filter((el) => el > 0);
     const updatedArray = [];
 
     for (let i = 0; i < nonZeroValues.length; i++) {
       const currNum = nonZeroValues[i];
-      const nextNum = nonZeroValues[i + 1];
 
+      // is last number
       if (i === nonZeroValues.length - 1) {
         updatedArray.push(currNum);
         break;
       }
+
+      const nextNum = nonZeroValues[i + 1];
 
       if (currNum === nextNum) {
         const sum = currNum + nextNum;
@@ -346,7 +349,7 @@ class Game {
 const game = new Game();
 
 game.restart();
-// game.moveLeft();
+game.moveLeft();
 // game.moveRight();
 // game.moveUp();
 // game.moveLeft();

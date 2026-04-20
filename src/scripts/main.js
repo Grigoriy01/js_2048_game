@@ -14,7 +14,7 @@ class GameView {
     this.tableItems = [...document.querySelectorAll('.field-cell')];
     this.messageItems = document.querySelector('.message-container');
 
-    // --> var for blocks Message
+    // --> var for the blocks Message
     this.messStart = this.messageItems.querySelector('.message-start');
     this.messWin = this.messageItems.querySelector('.message-win');
     this.messLose = this.messageItems.querySelector('.message-lose');
@@ -22,25 +22,36 @@ class GameView {
     this.initListener();
   }
 
+  // #region Listeners
   initListener() {
-    // #region start Button
     this.startBtn.addEventListener('click', () => {
       this.handleBtnStart();
       this.updateView();
     });
 
-    // #endregion start Button
-  }
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowLeft') {
+        this.game.moveLeft();
+        this.updateView();
+      }
 
-  // --> handleBtnStart
-  handleBtnStart() {
-    const statusValue = this.game.getState().statusGame;
+      if (e.key === 'ArrowRight') {
+        this.game.moveRight();
+        this.updateView();
+      }
 
-    if (statusValue !== Game.statuses.idle) {
-      this.game.restart();
-    } else {
-      this.game.start();
-    }
+      if (e.key === 'ArrowUp') {
+        this.game.moveUp();
+        this.updateView();
+      }
+
+      if (e.key === 'ArrowDown') {
+        this.game.moveDown();
+        this.updateView();
+      }
+    });
+
+    // #endregion Listeners
   }
 
   // --> updateView
@@ -51,8 +62,8 @@ class GameView {
     this.renderStatusGame(state.statusGame);
     this.renderScore(state.score);
   }
-
-  // -->
+  // #region methods-tools
+  // --> work with message blocks
   renderMessage(statusValue) {
     if (statusValue === Game.statuses.idle) {
       return;
@@ -69,6 +80,17 @@ class GameView {
 
       messageEl.classList.remove('hidden');
       this.messageItems.classList.remove('hidden');
+    }
+  }
+
+  // --> handleBtnStart
+  handleBtnStart() {
+    const statusValue = this.game.getState().statusGame;
+
+    if (statusValue !== Game.statuses.idle) {
+      this.game.restart();
+    } else {
+      this.game.start();
     }
   }
 
@@ -112,6 +134,10 @@ class GameView {
   renderScore = (dataScore) => {
     this.currentScore.textContent = dataScore;
   };
+  // #endregion methods-tools
+
+  // #region animation
+  // applyAnimationClass()
 }
 
 const view = new GameView(game);
