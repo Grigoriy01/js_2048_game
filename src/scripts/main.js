@@ -6,6 +6,8 @@ import Game from '../modules/Game.class.js';
 const game = new Game();
 
 class GameView {
+  #timerWin;
+
   constructor(logic) {
     this.game = logic;
 
@@ -70,6 +72,13 @@ class GameView {
     this.renderScore(state.score);
   }
   // #region methods-tools
+  // timer win
+  runWinTimer() {
+    this.#timerWin = setTimeout(
+      () => this.applyAnimationClass(this.startBtn),
+      5000,
+    );
+  }
   // --> work with message blocks
   renderMessage(statusValue) {
     if (statusValue === Game.statuses.idle) {
@@ -86,6 +95,10 @@ class GameView {
       const sufix = statusValue === Game.statuses.win ? 'win' : 'lose';
       const messageEl = this.messageItems.querySelector(`.message-${sufix}`);
 
+      if (sufix === 'lose') {
+        this.runWinTimer();
+      }
+
       if (sufix === 'win') {
         this.titleGame.classList.add('hidden');
       }
@@ -100,7 +113,9 @@ class GameView {
 
     if (statusValue !== Game.statuses.idle) {
       this.game.restart();
-      this.tableItems.forEach((el) => el.classList.remove('.vibrate-element'));
+      this.tableItems.forEach((el) => this.applyAnimationClass(el));
+      this.applyAnimationClass(this.startBtn);
+      clearTimeout(this.#timerWin);
     } else {
       this.game.start();
       this.applyAnimationClass(this.startBtn);
@@ -130,6 +145,7 @@ class GameView {
 
       if (value === 2048) {
         this.applyAnimationClass(cell);
+        this.runWinTimer();
       }
 
       cell.textContent = value === 0 ? '' : value;
