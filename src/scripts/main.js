@@ -13,6 +13,7 @@ class GameView {
     this.currentScore = document.querySelector('.game-score');
     this.tableItems = [...document.querySelectorAll('.field-cell')];
     this.messageItems = document.querySelector('.message-container');
+    this.titleGame = document.querySelector('h1');
 
     // --> var for the blocks Message
     this.messStart = this.messageItems.querySelector('.message-start');
@@ -20,12 +21,18 @@ class GameView {
     this.messLose = this.messageItems.querySelector('.message-lose');
 
     this.initListener();
+
+    this.timerIdle = setTimeout(
+      () => this.applyAnimationClass(this.startBtn),
+      5000,
+    );
   }
 
   // #region Listeners
   initListener() {
     this.startBtn.addEventListener('click', () => {
       this.handleBtnStart();
+      clearTimeout(this.timerIdle);
       this.updateView();
     });
 
@@ -73,11 +80,15 @@ class GameView {
     this.messLose.classList.add('hidden');
     this.messWin.classList.add('hidden');
     this.messageItems.classList.add('hidden');
+    this.titleGame.classList.remove('hidden');
 
     if (statusValue !== Game.statuses.playing) {
       const sufix = statusValue === Game.statuses.win ? 'win' : 'lose';
       const messageEl = this.messageItems.querySelector(`.message-${sufix}`);
 
+      if (sufix === 'win') {
+        this.titleGame.classList.add('hidden');
+      }
       messageEl.classList.remove('hidden');
       this.messageItems.classList.remove('hidden');
     }
@@ -89,8 +100,11 @@ class GameView {
 
     if (statusValue !== Game.statuses.idle) {
       this.game.restart();
+      this.tableItems.forEach((el) => el.classList.remove('.vibrate-element'));
     } else {
       this.game.start();
+      this.applyAnimationClass(this.startBtn);
+      clearTimeout(this.timerIdle);
     }
   }
 
@@ -104,6 +118,7 @@ class GameView {
       const classModif = `field-cell--${value}`;
       let j = 0;
 
+      // change the class-modificator
       while (j < classListValue.length) {
         const currString = classListValue[j];
 
@@ -111,6 +126,10 @@ class GameView {
           cell.classList.remove(currString);
         }
         j++;
+      }
+
+      if (value === 2048) {
+        this.applyAnimationClass(cell);
       }
 
       cell.textContent = value === 0 ? '' : value;
@@ -137,7 +156,17 @@ class GameView {
   // #endregion methods-tools
 
   // #region animation
-  // applyAnimationClass()
+  applyAnimationClass(element) {
+    const currStatus = this.game.getState().statusGame;
+
+    if (currStatus === Game.statuses.playing) {
+      element.classList.remove('vibrate-element');
+
+      return;
+    }
+
+    element.classList.add('vibrate-element');
+  }
 }
 
 const view = new GameView(game);
