@@ -395,15 +395,5 @@ class Game {
   // #endregion function-tools
 }
 
-const game = new Game();
-
-game.restart();
-game.moveLeft();
-// game.moveRight();
-// game.moveUp();
-// game.moveLeft();
-// game.moveUp();
-// game.getScore();
-
 // module.exports = Game;
 export default Game;
