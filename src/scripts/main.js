@@ -67,7 +67,7 @@ class GameView {
   updateView() {
     const state = this.game.getState();
 
-    this.renderBoard(state.board);
+    this.renderBoard(state.board, state.targetCellIndex);
     this.renderStatusGame(state.statusGame);
     this.renderScore(state.score);
   }
@@ -124,7 +124,7 @@ class GameView {
   }
 
   // --> rendering Board
-  renderBoard = (dateBoard) => {
+  renderBoard = (dateBoard, cellIndex) => {
     const flatBoard = dateBoard.flat();
 
     this.tableItems.forEach((cell, i) => {
@@ -150,6 +150,12 @@ class GameView {
 
       cell.textContent = value === 0 ? '' : value;
       cell.classList.add(classModif);
+
+      cellIndex.forEach((val) => {
+        if (i === val) {
+          this.trigerCellPuls(cell);
+        }
+      });
     });
   };
 
@@ -172,6 +178,14 @@ class GameView {
   // #endregion methods-tools
 
   // #region animation
+  trigerCellPuls(currCell) {
+    currCell.classList.add('scale-element');
+
+    setTimeout(() => {
+      currCell.classList.remove('scale-element');
+    }, 300);
+  }
+
   applyAnimationClass(element) {
     const currStatus = this.game.getState().statusGame;
 

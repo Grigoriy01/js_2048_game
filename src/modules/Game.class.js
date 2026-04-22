@@ -28,6 +28,7 @@ class Game {
   };
 
   #size;
+  #cellIndex = [];
 
   #score = 0;
   #initialBoard;
@@ -50,7 +51,10 @@ class Game {
   }
   // #region moves
   moveLeft() {
-    // guard from push-rey
+    // reset
+    this.#cellIndex = [];
+
+    // guard from pushing button
     if (
       this.#status === Game.statuses.lose ||
       this.#status === Game.statuses.win
@@ -60,12 +64,18 @@ class Game {
 
     let canMove = false;
 
-    this.board = this.board.map((row) => {
-      const { newValidArray, isChange } = this.#shiftDirection(row);
+    this.board = this.board.map((row, rowIndex) => {
+      const { newValidRow, isChange, targetIndex } = this.#shiftDirection(row);
 
       canMove ||= isChange;
 
-      return newValidArray;
+      targetIndex.forEach((el) => {
+        const globalCellIndex = rowIndex * 4 + el;
+
+        this.#cellIndex.push(globalCellIndex);
+      });
+
+      return newValidRow;
     });
 
     // wenn keine änderung werden, keine neuer Zehlen
@@ -78,6 +88,10 @@ class Game {
   }
 
   moveRight() {
+    // reset
+    this.#cellIndex = [];
+
+    // guard from pushing button
     if (
       this.#status === Game.statuses.lose ||
       this.#status === Game.statuses.win
@@ -87,14 +101,22 @@ class Game {
 
     let canMove = false;
 
-    this.board = this.board.map((row) => {
-      const { newValidArray, isChange } = this.#shiftDirection(
+    this.board = this.board.map((row, rowIndex) => {
+      const { newValidRow, isChange, targetIndex } = this.#shiftDirection(
         [...row].reverse(),
       );
 
       canMove ||= isChange;
 
-      return newValidArray.reverse();
+      const reverseTargetIndex = targetIndex.map((el) => 3 - el);
+
+      reverseTargetIndex.forEach((el) => {
+        const globalCellIndex = rowIndex * 4 + el;
+
+        this.#cellIndex.push(globalCellIndex);
+      });
+
+      return newValidRow.reverse();
     });
 
     if (!canMove) {
@@ -106,6 +128,10 @@ class Game {
   }
 
   moveUp() {
+    // reset
+    this.#cellIndex = [];
+
+    // guard from pushing button
     if (
       this.#status === Game.statuses.lose ||
       this.#status === Game.statuses.win
@@ -122,13 +148,20 @@ class Game {
         tempRow.push(this.board[y][x]);
       }
 
-      const { newValidArray, isChange } = this.#shiftDirection(tempRow);
+      const { newValidRow, isChange, targetIndex } =
+        this.#shiftDirection(tempRow);
 
       canMove ||= isChange;
 
       for (let y = 0; y < this.#size; y++) {
-        this.board[y][x] = newValidArray[y];
+        this.board[y][x] = newValidRow[y];
       }
+
+      targetIndex.forEach((el) => {
+        const globalCellIndex = el * 4 + x;
+
+        this.#cellIndex.push(globalCellIndex);
+      });
     }
 
     if (!canMove) {
@@ -140,6 +173,10 @@ class Game {
   }
 
   moveDown() {
+    // reset
+    this.#cellIndex = [];
+
+    // guard from pushing button
     if (
       this.#status === Game.statuses.lose ||
       this.#status === Game.statuses.win
@@ -156,16 +193,24 @@ class Game {
         tempRow.push(this.board[y][x]);
       }
 
-      const { newValidArray, isChange } = this.#shiftDirection(
+      const { newValidRow, isChange, targetIndex } = this.#shiftDirection(
         [...tempRow].reverse(),
       );
 
-      newValidArray.reverse();
+      newValidRow.reverse();
       canMove ||= isChange;
 
       for (let y = 0; y < this.#size; y++) {
-        this.board[y][x] = newValidArray[y];
+        this.board[y][x] = newValidRow[y];
       }
+
+      const reverseTargetIndex = targetIndex.map((el) => 3 - el);
+
+      reverseTargetIndex.forEach((el) => {
+        const globalCellIndex = el * 4 + x;
+
+        this.#cellIndex.push(globalCellIndex);
+      });
     }
 
     if (!canMove) {
@@ -192,6 +237,7 @@ class Game {
       score: this.#score,
       statusGame: this.#status,
       board: this.board,
+      targetCellIndex: this.#cellIndex,
     };
   }
 
@@ -237,6 +283,7 @@ class Game {
   #shiftDirection(row) {
     const nonZeroValues = row.filter((el) => el > 0);
     const updatedArray = [];
+    const targetIndex = [];
 
     for (let i = 0; i < nonZeroValues.length; i++) {
       const currNum = nonZeroValues[i];
@@ -253,6 +300,7 @@ class Game {
         const sum = currNum + nextNum;
 
         updatedArray.push(sum);
+        targetIndex.push(updatedArray.length - 1);
         this.#score += sum;
         i++;
       } else {
@@ -260,21 +308,22 @@ class Game {
       }
     }
 
-    const newValidArray = [];
+    const newValidRow = [];
 
     for (let i = 0; i < this.#size; i++) {
       const curr = updatedArray[i];
 
-      newValidArray.push(typeof curr === 'number' ? curr : 0);
+      newValidRow.push(typeof curr === 'number' ? curr : 0);
     }
 
     const beforRow = row.join(',');
-    const afterRow = newValidArray.join(',');
+    const afterRow = newValidRow.join(',');
     const isChange = beforRow !== afterRow;
 
     return {
-      newValidArray,
+      newValidRow,
       isChange,
+      targetIndex,
     };
   }
   // --> random position of Numbers on the board
