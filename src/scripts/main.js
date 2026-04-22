@@ -18,12 +18,14 @@ class GameView {
     this.titleGame = document.querySelector('h1');
 
     // --> var for the blocks Message
-    this.messStart = this.messageItems.querySelector('.message-start');
-    this.messWin = this.messageItems.querySelector('.message-win');
-    this.messLose = this.messageItems.querySelector('.message-lose');
+    this.messageStart = this.messageItems.querySelector('.message-start');
+    this.messageWin = this.messageItems.querySelector('.message-win');
+    this.messageLose = this.messageItems.querySelector('.message-lose');
 
     this.initListener();
 
+    // We start an inactivity timer
+    // to draw the user's attention to the Start button.
     this.timerIdle = setTimeout(
       () => this.applyAnimationClass(this.startBtn),
       5000,
@@ -85,9 +87,9 @@ class GameView {
       return;
     }
 
-    this.messStart.classList.add('hidden');
-    this.messLose.classList.add('hidden');
-    this.messWin.classList.add('hidden');
+    this.messageStart.classList.add('hidden');
+    this.messageLose.classList.add('hidden');
+    this.messageWin.classList.add('hidden');
     this.messageItems.classList.add('hidden');
     this.titleGame.classList.remove('hidden');
 
@@ -124,8 +126,8 @@ class GameView {
   }
 
   // --> rendering Board
-  renderBoard = (dateBoard, cellIndex) => {
-    const flatBoard = dateBoard.flat();
+  renderBoard(boardData, cellIndex) {
+    const flatBoard = boardData.flat();
 
     this.tableItems.forEach((cell, i) => {
       const classListValue = [...cell.classList];
@@ -133,7 +135,8 @@ class GameView {
       const classModif = `field-cell--${value}`;
       let j = 0;
 
-      // change the class-modificator
+      // Remove old class modifiers (field-cell--value)
+      // before rendering the new state
       while (j < classListValue.length) {
         const currString = classListValue[j];
 
@@ -153,11 +156,11 @@ class GameView {
 
       cellIndex.forEach((val) => {
         if (i === val) {
-          this.trigerCellPuls(cell);
+          this.trigerCellPulse(cell);
         }
       });
     });
-  };
+  }
 
   // --> rendering Status - Game
   renderStatusGame(infoStatus) {
@@ -172,13 +175,14 @@ class GameView {
   }
 
   // -->rendering Score
-  renderScore = (dataScore) => {
+  renderScore(dataScore) {
     this.currentScore.textContent = dataScore;
-  };
+  }
+
   // #endregion methods-tools
 
   // #region animation
-  trigerCellPuls(currCell) {
+  trigerCellPulse(currCell) {
     currCell.classList.add('scale-element');
 
     setTimeout(() => {

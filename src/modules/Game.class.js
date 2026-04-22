@@ -28,7 +28,7 @@ class Game {
   };
 
   #size;
-  #cellIndex = [];
+  #mergedCellIndex = [];
 
   #score = 0;
   #initialBoard;
@@ -52,7 +52,7 @@ class Game {
   // #region moves
   moveLeft() {
     // reset
-    this.#cellIndex = [];
+    this.#mergedCellIndex = [];
 
     // guard from pushing button
     if (
@@ -72,7 +72,7 @@ class Game {
       targetIndex.forEach((el) => {
         const globalCellIndex = rowIndex * 4 + el;
 
-        this.#cellIndex.push(globalCellIndex);
+        this.#mergedCellIndex.push(globalCellIndex);
       });
 
       return newValidRow;
@@ -89,7 +89,7 @@ class Game {
 
   moveRight() {
     // reset
-    this.#cellIndex = [];
+    this.#mergedCellIndex = [];
 
     // guard from pushing button
     if (
@@ -101,6 +101,7 @@ class Game {
 
     let canMove = false;
 
+    // A double reverse is required for correct display.
     this.board = this.board.map((row, rowIndex) => {
       const { newValidRow, isChange, targetIndex } = this.#shiftDirection(
         [...row].reverse(),
@@ -113,7 +114,7 @@ class Game {
       reverseTargetIndex.forEach((el) => {
         const globalCellIndex = rowIndex * 4 + el;
 
-        this.#cellIndex.push(globalCellIndex);
+        this.#mergedCellIndex.push(globalCellIndex);
       });
 
       return newValidRow.reverse();
@@ -129,7 +130,7 @@ class Game {
 
   moveUp() {
     // reset
-    this.#cellIndex = [];
+    this.#mergedCellIndex = [];
 
     // guard from pushing button
     if (
@@ -141,6 +142,7 @@ class Game {
 
     let canMove = false;
 
+    // I form a column, taking one cell from each row.
     for (let x = 0; x < this.#size; x++) {
       const tempRow = [];
 
@@ -160,7 +162,7 @@ class Game {
       targetIndex.forEach((el) => {
         const globalCellIndex = el * 4 + x;
 
-        this.#cellIndex.push(globalCellIndex);
+        this.#mergedCellIndex.push(globalCellIndex);
       });
     }
 
@@ -174,7 +176,7 @@ class Game {
 
   moveDown() {
     // reset
-    this.#cellIndex = [];
+    this.#mergedCellIndex = [];
 
     // guard from pushing button
     if (
@@ -186,6 +188,7 @@ class Game {
 
     let canMove = false;
 
+    // I form a column, taking one cell from each row.
     for (let x = 0; x < this.#size; x++) {
       const tempRow = [];
 
@@ -193,6 +196,7 @@ class Game {
         tempRow.push(this.board[y][x]);
       }
 
+      // A double reverse is required for correct display.
       const { newValidRow, isChange, targetIndex } = this.#shiftDirection(
         [...tempRow].reverse(),
       );
@@ -209,7 +213,7 @@ class Game {
       reverseTargetIndex.forEach((el) => {
         const globalCellIndex = el * 4 + x;
 
-        this.#cellIndex.push(globalCellIndex);
+        this.#mergedCellIndex.push(globalCellIndex);
       });
     }
 
@@ -237,7 +241,7 @@ class Game {
       score: this.#score,
       statusGame: this.#status,
       board: this.board,
-      targetCellIndex: this.#cellIndex,
+      targetCellIndex: this.#mergedCellIndex,
     };
   }
 
@@ -281,6 +285,7 @@ class Game {
   // #region function-tools
   // --> shift of values in the row and addition of values
   #shiftDirection(row) {
+    // Clear the array of zeros to work only with active numbers
     const nonZeroValues = row.filter((el) => el > 0);
     const updatedArray = [];
     const targetIndex = [];
@@ -316,9 +321,9 @@ class Game {
       newValidRow.push(typeof curr === 'number' ? curr : 0);
     }
 
-    const beforRow = row.join(',');
+    const beforeRow = row.join(',');
     const afterRow = newValidRow.join(',');
-    const isChange = beforRow !== afterRow;
+    const isChange = beforeRow !== afterRow;
 
     return {
       newValidRow,
