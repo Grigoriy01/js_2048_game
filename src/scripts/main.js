@@ -168,7 +168,7 @@ class GameView {
     if (infoStatus !== Game.statuses.idle) {
       this.startBtn.classList.remove('start');
       this.startBtn.classList.add('restart');
-      this.startBtn.textContent = 'restart';
+      this.startBtn.textContent = 'Restart';
     }
 
     this.renderMessage(infoStatus);
